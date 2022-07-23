@@ -105,7 +105,7 @@ def intercept_mcodes(actions):
 
 def get_actions_from_config():
     actions = []
-    filter_filepath = DSF_PLUGINS_DIR / f'{PLUGIN_NAME}/dsf/filters.json'
+    filter_filepath = DSF_PLUGINS_DIR / f'{PLUGIN_NAME}/dwc/filters.json'
     if not filter_filepath.is_file():
         return actions
 
