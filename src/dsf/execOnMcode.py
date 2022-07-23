@@ -61,10 +61,10 @@ def intercept_mcodes(actions):
             elif code.majorNumber == 7722:  # Shutdown SBC with 1 minute delay
                 subprocess.run(["sudo", "shutdown", "+1"])
                 intercept_connection.resolve_code(MessageType.Warn, "Shutting down SBC in 1min...")
-            elif str(code) in filters:  # Do actions from JSON file
+            elif code.short_str() in filters:  # Do actions from JSON file
                 error_msg = ""
                 out = None
-                action = __get_action_for_code(actions, str(code))
+                action = __get_action_for_code(actions, code.short_str())
                 if not action:
                     intercept_connection.ignore_code()
                     continue
