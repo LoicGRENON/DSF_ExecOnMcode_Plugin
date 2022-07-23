@@ -17,7 +17,7 @@ from MCodeAction import MCodeAction
 
 # TODO: get the path from DSF config
 DSF_PLUGINS_DIR = Path('/opt/dsf/plugins')
-DEFAULT_FILTERS = ["M1000", "M7722"]
+DEFAULT_FILTERS = ["M1200", "M7722"]
 PLUGIN_NAME = "ExecOnMcode"
 
 
@@ -35,6 +35,7 @@ def __get_filters_from_actions(actions):
 
 def intercept_mcodes(actions):
     filters = __get_filters_from_actions(actions)
+    # TODO: Set InterceptionMode and debug from settings
     intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters, debug=True)
     intercept_connection.connect()
 
@@ -48,12 +49,13 @@ def intercept_mcodes(actions):
                 intercept_connection.ignore_code()
                 continue
 
-            if code.majorNumber == 1000:  # Update interception filters
+            if code.majorNumber == 1200:  # Update interception filters
                 actions = get_actions_from_config()
                 filters = __get_filters_from_actions(actions)
                 msg = f"{PLUGIN_NAME}: Interception filters successfully updated"
                 intercept_connection.resolve_code(MessageType.Success, msg)
                 intercept_connection.close()
+                # TODO: Set InterceptionMode and debug from settings
                 intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters, debug=True)
                 intercept_connection.connect()
             elif code.majorNumber == 7722:  # Shutdown SBC with 1 minute delay

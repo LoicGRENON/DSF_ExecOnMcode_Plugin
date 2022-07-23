@@ -17,17 +17,18 @@ class MCodeAction:
             self.timeout = 30
 
         try:
-            self.flush = action['flush']
+            self.flush = bool(action['flush'])
         except KeyError:
             self.flush = False
 
         try:
-            self.capture_output = action['capture_output']
+            self.capture_output = bool(action['capture_output'])
         except KeyError:
             self.capture_output = False
 
         try:
             self.user = action['user']
+            # TODO: Check if the user actually exists on the system
         except KeyError:
             self.user = "dsf"
 
