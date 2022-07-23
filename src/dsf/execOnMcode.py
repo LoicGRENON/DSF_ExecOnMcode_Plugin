@@ -17,7 +17,7 @@ from MCodeAction import MCodeAction
 
 # TODO: get the path from DSF config
 DSF_PLUGINS_DIR = Path('/opt/dsf/plugins')
-DEFAULT_FILTERS = ["M1200", "M7722"]
+DEFAULT_FILTERS = ["M1200"]
 PLUGIN_NAME = "ExecOnMcode"
 
 
@@ -58,9 +58,6 @@ def intercept_mcodes(actions):
                 # TODO: Set InterceptionMode and debug from settings
                 intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters, debug=True)
                 intercept_connection.connect()
-            elif code.majorNumber == 7722:  # Shutdown SBC with 1 minute delay
-                subprocess.run(["sudo", "shutdown", "+1"])
-                intercept_connection.resolve_code(MessageType.Warn, "Shutting down SBC in 1min...")
             elif code.short_str() in filters:  # Do actions from JSON file
                 error_msg = ""
                 out = None

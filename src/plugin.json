@@ -10,6 +10,12 @@
   "sbcDsfVersion": "3.4",
   "sbcExecutable": "execOnMcode.py",
   "sbcOutputRedirected": true,
-  "sbcPermissions": ["superUser"],
+  "sbcPermissions": [
+    "codeInterceptionRead",
+    "commandExecution",
+    "fileSystemAccess",
+    "launchProcesses",
+    "registerHttpEndpoints"
+    ],
   "sbcPythonDependencies": ["dsf-python"]
 }
