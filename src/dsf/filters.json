@@ -1,0 +1,10 @@
+[
+  {
+    "code": "",
+    "command": "",
+    "user": "",
+    "flush": false,
+    "timeout": 30,
+    "capture_output": false
+  }
+]
