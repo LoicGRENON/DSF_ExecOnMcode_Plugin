@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import subprocess
 import sys
 import traceback
-from pathlib import Path
 
-from dsf.connections import InterceptConnection
+from dsf.connections import CommandConnection, InterceptConnection
 from dsf.commands.basecommands import MessageType
 from dsf.commands.code import CodeType
 from dsf.initmessages.clientinitmessages import InterceptionMode
@@ -15,8 +15,6 @@ from dsf.initmessages.clientinitmessages import InterceptionMode
 from MCodeAction import MCodeAction
 
 
-# TODO: get the path from DSF config
-DSF_PLUGINS_DIR = Path('/opt/dsf/plugins')
 DEFAULT_FILTERS = ["M1200"]
 PLUGIN_NAME = "ExecOnMcode"
 
@@ -102,8 +100,30 @@ def intercept_mcodes(actions):
 
 def get_actions_from_config():
     actions = []
-    filter_filepath = DSF_PLUGINS_DIR / f'{PLUGIN_NAME}/dwc/filters.json'
-    if not filter_filepath.is_file():
+    # Use DSF API to get the physical path to the configuration file
+    cmd_conn = CommandConnection()
+    cmd_conn.connect()
+    try:
+        res = cmd_conn.resolve_path("0:/sys/ExecOnMcode.json")
+    finally:
+        cmd_conn.close()
+
+    filter_filepath = res.result if res else None
+    if not os.path.isfile(filter_filepath):
+        if filter_filepath:
+            # Create a blank default file as example
+            default_file_data = [
+                {
+                    'code': 'M1201',
+                    'command': "echo 'If you can see this, it means ExecOnMcode is working !'",
+                    'user': '',
+                    'timeout': 30,
+                    'capture_output': False,
+                    'flush': False
+                }
+            ]
+            with open(filter_filepath, 'w') as fp:
+                fp.write(json.dumps(default_file_data, indent=4))
         return actions
 
     with open(filter_filepath) as fp:
@@ -122,3 +142,4 @@ def get_actions_from_config():
 
 if __name__ == "__main__":
     intercept_mcodes(get_actions_from_config())
+
