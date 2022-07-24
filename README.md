@@ -5,9 +5,12 @@ ExecOnMcode is a SBC plugin for DuetSoftwareFramework (based on dsf-python) to r
 
 It provides M1200 M-Code which is used to update the interception filters.
 
-Others M-Codes and related commands can be added by editing the `filters.json` file and then issuing `M1200` (or restarting the plugin) to update the interception filters.
+Others M-Codes and related commands can be added by editing the `ExecOnMcode.json` file located in System directory and then issuing `M1200` (or restarting the plugin) to update the interception filters.
 
 ## Installation
 
-Go on the `Plugins` Tab of Duet Web Control, select `External plugins`, click on "Upload System Files" and select the plugin zip archive.  
-Follow the on-screen instructions to install the plugin.
+1. Go on the `Plugins` Tab of Duet Web Control
+2. Select `External plugins`
+3. Click on "Upload System Files" and select the plugin zip archive.
+4. Follow the on-screen instructions to install the plugin.
+5. Click on the `Start` button to start the plugin
