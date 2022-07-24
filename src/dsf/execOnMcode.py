@@ -4,11 +4,10 @@
 import json
 import os
 import subprocess
-import sys
 import traceback
 
 from dsf.connections import CommandConnection, InterceptConnection
-from dsf.commands.basecommands import MessageType
+from dsf.commands.basecommands import LogLevel, MessageType
 from dsf.commands.code import CodeType
 from dsf.initmessages.clientinitmessages import InterceptionMode
 
@@ -98,16 +97,14 @@ def intercept_mcodes(actions):
         intercept_connection.close()
 
 
+def write_message(msg, msgType=MessageType.Success, loglvl=LogLevel.Info):
+    cmd_conn.write_message(msgType, f"{PLUGIN_NAME}: {msg}", True, loglvl)
+
+
 def get_actions_from_config():
     actions = []
     # Use DSF API to get the physical path to the configuration file
-    cmd_conn = CommandConnection()
-    cmd_conn.connect()
-    try:
-        res = cmd_conn.resolve_path("0:/sys/ExecOnMcode.json")
-    finally:
-        cmd_conn.close()
-
+    res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}.json")
     filter_filepath = res.result if res else None
     if not os.path.isfile(filter_filepath):
         if filter_filepath:
@@ -115,7 +112,7 @@ def get_actions_from_config():
             default_file_data = [
                 {
                     'code': 'M1201',
-                    'command': "echo 'If you can see this, it means ExecOnMcode is working !'",
+                    'command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
                     'user': '',
                     'timeout': 30,
                     'capture_output': False,
@@ -130,16 +127,26 @@ def get_actions_from_config():
         json_filter = json.load(fp)
         for action in json_filter:
             if action['code'] in DEFAULT_FILTERS:
-                # TODO: See why messages are not displayed in DWC or logs
-                sys.stderr.write(f"{action['code']} is a reserved filter and thus it can't be used.")
+                write_message(
+                    f"{action['code']} is a reserved filter and thus it can't be used.",
+                    MessageType.Error,
+                    LogLevel.Warn)
                 continue
             try:
                 actions.append(MCodeAction(action))
             except KeyError as e:
-                sys.stderr.write(e)
+                write_message(
+                    e,
+                    MessageType.Error,
+                    LogLevel.Warn)
     return actions
 
 
 if __name__ == "__main__":
-    intercept_mcodes(get_actions_from_config())
+    cmd_conn = CommandConnection()
+    try:
+        cmd_conn.connect()
+        intercept_mcodes(get_actions_from_config())
+    finally:
+        cmd_conn.close()
 
