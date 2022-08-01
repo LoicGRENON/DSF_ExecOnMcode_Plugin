@@ -11,7 +11,7 @@ from dsf.commands.basecommands import LogLevel, MessageType
 from dsf.commands.code import CodeType
 from dsf.initmessages.clientinitmessages import InterceptionMode
 
-from http_endpoints import custom_http_endpoint
+from http_endpoints import custom_http_endpoints
 from MCodeAction import MCodeAction
 
 
@@ -127,7 +127,10 @@ def get_actions_from_config():
         return actions
 
     with open(filter_filepath) as fp:
-        json_filter = json.load(fp)
+        try:
+            json_filter = json.load(fp)
+        except json.decoder.JSONDecodeError:
+            json_filter = []
         for action in json_filter:
             if action['cmd_code'] in DEFAULT_FILTERS:
                 write_message(
@@ -149,10 +152,10 @@ if __name__ == "__main__":
     cmd_conn = CommandConnection()
     try:
         cmd_conn.connect()
-        endpoint = custom_http_endpoint(cmd_conn)
+        endpoints = custom_http_endpoints(cmd_conn)
         intercept_mcodes(get_actions_from_config())
     finally:
-        if endpoint:
+        for endpoint in endpoints:
             endpoint.close()
         cmd_conn.close()
 

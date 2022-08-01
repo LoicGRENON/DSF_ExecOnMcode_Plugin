@@ -167,12 +167,11 @@
                     this.alert_required_value = false;
                     return;
                 }else {
-                    // TODO: save data using POST request
                     if(this.is_newCmd){
-                        
                         this.cmds_list.push(this.editItem);
                         this.last_cmd_code = this.current_cmd_code;
                     }
+                    this.save_cmds()
                     this.edit_cmd_dialog = false;
                     return;
                 }
@@ -180,7 +179,7 @@
             new_cmd(){
                 this.current_cmd_code = this.last_cmd_code + 1;
                 var new_command ={
-                    cmd_code: this.current_cmd_code,
+                    cmd_code: "M" + this.current_cmd_code,
                     cmd_name: "",
                     cmd_command: "",
                     cmd_enabled: true,
@@ -204,12 +203,23 @@
                 }
                 this.cmds_list.splice(requiredIndex, 1);
                 this.deleteItem = null;
+                this.save_cmds()
             },
             async reload_cmds(){
                 const headers = { "Access-Control-Allow-Private-Network": "true" };  // Add header for CORS policy
                 const response = await fetch("http://" + window.location.host + "/machine/ExecOnMcode/getCmdList", { headers });
                 const { data: cmds_list } = await response.json();
                 this.cmds_list = cmds_list;
+            },
+            async save_cmds(){
+                const requestOptions = {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(this.cmds_list)
+                };
+                const response = await fetch("http://" + window.location.host + "/machine/ExecOnMcode/saveCmdList", requestOptions);
+                const data = await response.json();
+                console.log(data);
             },
 		},
     }
