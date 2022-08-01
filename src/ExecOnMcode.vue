@@ -99,13 +99,13 @@
                 <template v-slot:item.actions="{ item }">
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-icon small class="mr-2" v-bind="attrs" v-on="on" @click="edit_cmd(item)">mdi-pencil</v-icon>
+                            <v-icon small class="mr-2" v-bind="attrs" v-on="on" @click="edit_cmd(item)" v-if="item.cmd_code != 'M1201'">mdi-pencil</v-icon>
                         </template>
                         <span>Edit command</span>
                     </v-tooltip>
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-icon small class="mr-2" v-bind="attrs" v-on="on" @click="del_cmd(item.cmd_code)">mdi-delete</v-icon>
+                            <v-icon small class="mr-2" v-bind="attrs" v-on="on" @click="del_cmd(item.cmd_code)" v-if="item.cmd_code != 'M1201'">mdi-delete</v-icon>
                         </template>
                         <span>Delete command</span>
                     </v-tooltip>
