@@ -11,6 +11,7 @@ from dsf.commands.basecommands import LogLevel, MessageType
 from dsf.commands.code import CodeType
 from dsf.initmessages.clientinitmessages import InterceptionMode
 
+from http_endpoints import custom_http_endpoint
 from MCodeAction import MCodeAction
 
 
@@ -20,12 +21,12 @@ PLUGIN_NAME = "ExecOnMcode"
 
 def __get_action_for_code(actions, received_code):
     for action in actions:
-        if action.code == received_code:
+        if action.cmd_code == received_code:
             return action
 
 
 def __get_filters_from_actions(actions):
-    filters = [a.code for a in actions]
+    filters = [a.cmd_code for a in actions]
     filters.extend(DEFAULT_FILTERS)
     return filters
 
@@ -59,10 +60,10 @@ def intercept_mcodes(actions):
                 error_msg = ""
                 out = None
                 action = __get_action_for_code(actions, code.short_str())
-                if not action:
+                if not action or not action.cmd_enabled:
                     intercept_connection.ignore_code()
                     continue
-                if action.flush:
+                if action.cmd_flush:
                     # Flush the code's channel to be sure we are being in sync with the machine
                     success = intercept_connection.flush(code.channel)
                     if not success:
@@ -71,10 +72,10 @@ def intercept_mcodes(actions):
                         continue
                 # TODO: use user
                 try:
-                    out = subprocess.run(action.cmd,
+                    out = subprocess.run(action.cmd_command,
                                          shell=True,
-                                         timeout=action.timeout,
-                                         capture_output=action.capture_output,
+                                         timeout=action.cmd_timeout,
+                                         capture_output=action.cmd_capture_output,
                                          text=True)
                 except subprocess.TimeoutExpired as e:
                     error_msg = f"Timeout expired on `{e.cmd}`."
@@ -84,7 +85,7 @@ def intercept_mcodes(actions):
                 # Resolve the received code and return result
                 if error_msg:
                     intercept_connection.resolve_code(MessageType.Error, error_msg)
-                elif action.capture_output and out:
+                elif action.cmd_capture_output and out:
                     intercept_connection.resolve_code(MessageType.Success, out.stdout)
                 else:
                     intercept_connection.resolve_code()
@@ -111,12 +112,14 @@ def get_actions_from_config():
             # Create a blank default file as example
             default_file_data = [
                 {
-                    'code': 'M1201',
-                    'command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
-                    'user': '',
-                    'timeout': 30,
-                    'capture_output': False,
-                    'flush': False
+                    'cmd_code': 'M1201',
+                    'cmd_name': 'Echo test',
+                    'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
+                    'cmd_user': '',
+                    'cmd_timeout': 30,
+                    'cmd_capture_output': False,
+                    'cmd_flush': False,
+                    'cmd_enabled': True
                 }
             ]
             with open(filter_filepath, 'w') as fp:
@@ -126,9 +129,9 @@ def get_actions_from_config():
     with open(filter_filepath) as fp:
         json_filter = json.load(fp)
         for action in json_filter:
-            if action['code'] in DEFAULT_FILTERS:
+            if action['cmd_code'] in DEFAULT_FILTERS:
                 write_message(
-                    f"{action['code']} is a reserved filter and thus it can't be used.",
+                    f"{action['cmd_code']} is a reserved filter and thus it can't be used.",
                     MessageType.Error,
                     LogLevel.Warn)
                 continue
@@ -146,7 +149,10 @@ if __name__ == "__main__":
     cmd_conn = CommandConnection()
     try:
         cmd_conn.connect()
+        endpoint = custom_http_endpoint(cmd_conn)
         intercept_mcodes(get_actions_from_config())
     finally:
+        if endpoint:
+            endpoint.close()
         cmd_conn.close()
 
