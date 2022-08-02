@@ -2,12 +2,12 @@
 
 import json
 
+from dsf.connections import CommandConnection
 from dsf.commands.basecommands import HttpEndpointType
 from dsf.http import HttpEndpointConnection
 
 PLUGIN_NAME = "ExecOnMcode"
 filter_filepath = ""
-cmd_conn = None
 
 
 async def getCmdList_handler(http_endpoint_connection: HttpEndpointConnection):
@@ -27,16 +27,23 @@ async def getCmdList_handler(http_endpoint_connection: HttpEndpointConnection):
 
 
 async def saveCmdList_handler(http_endpoint_connection: HttpEndpointConnection):
-    response = await http_endpoint_connection.read_request()
-    print(response.body)
-
+    request = await http_endpoint_connection.read_request()
+    # Write the commands list to the JSON file
     with open(filter_filepath, 'w') as fp:
-        # TODO: Make sure the command code is Mxxx
-        fp.write(json.dumps(json.loads(response.body), indent=4))
+        # TODO: Make sure the command code is Mxxx before to save it / Sanitize the data
+        fp.write(json.dumps(json.loads(request.body), indent=4))
 
     response_data = {'success': True}
     await http_endpoint_connection.send_response(200, json.dumps(response_data))
     http_endpoint_connection.close()
+
+    cmd_conn = CommandConnection()
+    cmd_conn.connect()
+    try:
+        # Send M1200 to update interception filters 
+        cmd_conn.perform_simple_code('M1200')
+    finally:
+        cmd_conn.close()
 
 
 def custom_http_endpoints(cmd_conn):
