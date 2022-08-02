@@ -131,13 +131,13 @@ def get_actions_from_config():
             ]
             with open(filter_filepath, 'w') as fp:
                 fp.write(json.dumps(default_file_data, indent=4))
-        return actions
 
     with open(filter_filepath) as fp:
         try:
             json_filter = json.load(fp)
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
             json_filter = []
+            write_message(e, MessageType.Error, LogLevel.Warn)
         for action in json_filter:
             if action['cmd_code'] in DEFAULT_FILTERS:
                 write_message(
@@ -148,10 +148,7 @@ def get_actions_from_config():
             try:
                 actions.append(MCodeAction(action))
             except KeyError as e:
-                write_message(
-                    e,
-                    MessageType.Error,
-                    LogLevel.Warn)
+                write_message(e, MessageType.Error, LogLevel.Warn)
     return actions
 
 
