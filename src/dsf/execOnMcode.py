@@ -31,10 +31,55 @@ def __get_filters_from_actions(actions):
     return filters
 
 
+def __update_interception_filters(intercept_connection):
+    actions = get_actions_from_config()
+    filters = __get_filters_from_actions(actions)
+    msg = f"{PLUGIN_NAME}: Interception filters successfully updated"
+    intercept_connection.resolve_code(MessageType.Success, msg)
+    intercept_connection.close()
+    intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters)
+    intercept_connection.connect()
+    return intercept_connection, filters, actions
+
+
+def __do_action_for_code(intercept_connection, actions, code):
+    error_msg = ""
+    out = None
+    action = __get_action_for_code(actions, code.short_str())
+    if not action or not action.cmd_enabled:
+        intercept_connection.ignore_code()
+        return
+    if action.cmd_flush:
+        # Flush the code's channel to be sure we are being in sync with the machine
+        success = intercept_connection.flush(code.channel)
+        if not success:
+            print("Flush failed")
+            intercept_connection.cancel_code()
+            return
+    # TODO: use user
+    try:
+        out = subprocess.run(action.cmd_command,
+                                shell=True,
+                                timeout=action.cmd_timeout,
+                                capture_output=action.cmd_capture_output,
+                                text=True)
+    except subprocess.TimeoutExpired as e:
+        error_msg = f"Timeout expired on `{e.cmd}`."
+        if action.capture_output and e.output:
+            error_msg += f"\nOutput was: {e.output}"
+
+    # Resolve the received code and return result
+    if error_msg:
+        intercept_connection.resolve_code(MessageType.Error, error_msg)
+    elif action.cmd_capture_output and out:
+        intercept_connection.resolve_code(MessageType.Success, out.stdout)
+    else:
+        intercept_connection.resolve_code()
+
+
 def intercept_mcodes(actions):
     filters = __get_filters_from_actions(actions)
-    # TODO: Set InterceptionMode and debug from settings
-    intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters, debug=True)
+    intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters)
     intercept_connection.connect()
 
     try:
@@ -48,47 +93,9 @@ def intercept_mcodes(actions):
                 continue
 
             if code.majorNumber == 1200:  # Update interception filters
-                actions = get_actions_from_config()
-                filters = __get_filters_from_actions(actions)
-                msg = f"{PLUGIN_NAME}: Interception filters successfully updated"
-                intercept_connection.resolve_code(MessageType.Success, msg)
-                intercept_connection.close()
-                # TODO: Set InterceptionMode and debug from settings
-                intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters, debug=True)
-                intercept_connection.connect()
-            elif code.short_str() in filters:  # Do actions from JSON file
-                error_msg = ""
-                out = None
-                action = __get_action_for_code(actions, code.short_str())
-                if not action or not action.cmd_enabled:
-                    intercept_connection.ignore_code()
-                    continue
-                if action.cmd_flush:
-                    # Flush the code's channel to be sure we are being in sync with the machine
-                    success = intercept_connection.flush(code.channel)
-                    if not success:
-                        print("Flush failed")
-                        intercept_connection.cancel_code()
-                        continue
-                # TODO: use user
-                try:
-                    out = subprocess.run(action.cmd_command,
-                                         shell=True,
-                                         timeout=action.cmd_timeout,
-                                         capture_output=action.cmd_capture_output,
-                                         text=True)
-                except subprocess.TimeoutExpired as e:
-                    error_msg = f"Timeout expired on `{e.cmd}`."
-                    if action.capture_output and e.output:
-                        error_msg += f"\nOutput was: {e.output}"
-
-                # Resolve the received code and return result
-                if error_msg:
-                    intercept_connection.resolve_code(MessageType.Error, error_msg)
-                elif action.cmd_capture_output and out:
-                    intercept_connection.resolve_code(MessageType.Success, out.stdout)
-                else:
-                    intercept_connection.resolve_code()
+                intercept_connection, filters, actions = __update_interception_filters(intercept_connection)
+            elif code.short_str() in filters:  # Do action from JSON file
+                __do_action_for_code(intercept_connection, actions, code)
             else:
                 # We did not handle it so we ignore it and it will be continued to be processed
                 intercept_connection.ignore_code()
