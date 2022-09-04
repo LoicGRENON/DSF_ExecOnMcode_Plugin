@@ -73,7 +73,7 @@ def __do_action_for_code(intercept_connection, actions, code):
         intercept_connection.resolve_code(MessageType.Error, error_msg)
     else:
         # Display the command output if not explicitly requested to be hidden
-        msg = f"[{PLUGIN_NAME}]: {out.stdout}" if out and not action.cmd_capture_output else None
+        msg = f"[{PLUGIN_NAME}]: {out.stdout}" if out and out.stdout and not action.cmd_capture_output else None
         intercept_connection.resolve_code(MessageType.Success, msg)
 
 
@@ -123,6 +123,16 @@ def get_actions_from_config():
                 'cmd_code': 'M1201',
                 'cmd_name': 'Echo test',
                 'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
+                'cmd_user': '',
+                'cmd_timeout': 30,
+                'cmd_capture_output': False,
+                'cmd_flush': False,
+                'cmd_enabled': True
+            },
+            {
+                'cmd_code': 'M1202',
+                'cmd_name': 'Top',
+                'cmd_command': "python3 /opt/dsf/sd/sys/ExecOnMcode/top-example.py",
                 'cmd_user': '',
                 'cmd_timeout': 30,
                 'cmd_capture_output': False,
