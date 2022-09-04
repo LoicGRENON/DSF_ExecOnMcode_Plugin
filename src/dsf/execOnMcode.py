@@ -123,7 +123,6 @@ def get_actions_from_config():
                 'cmd_code': 'M1201',
                 'cmd_name': 'Echo test',
                 'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
-                'cmd_user': '',
                 'cmd_timeout': 30,
                 'cmd_capture_output': False,
                 'cmd_flush': False,
@@ -131,9 +130,8 @@ def get_actions_from_config():
             },
             {
                 'cmd_code': 'M1202',
-                'cmd_name': 'Top',
+                'cmd_name': 'Python script example - Top',
                 'cmd_command': "python3 /opt/dsf/sd/sys/ExecOnMcode/top-example.py",
-                'cmd_user': '',
                 'cmd_timeout': 30,
                 'cmd_capture_output': False,
                 'cmd_flush': False,
