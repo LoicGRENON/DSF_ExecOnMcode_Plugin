@@ -1,7 +1,9 @@
 # DSF_ExecOnMcode_Plugin
 
 ## Description
-ExecOnMcode is a SBC plugin for DuetSoftwareFramework (based on dsf-python) to run commands on user-defined M-Codes.
+ExecOnMcode is a SBC plugin for [DuetSoftwareFramework](https://github.com/Duet3D/DuetSoftwareFramework) and based on [dsf-python](https://github.com/Duet3D/dsf-python) to run commands on user-defined M-Codes.
+
+This plugin is based on the original idea from [wilriker's execonmcode](https://github.com/wilriker/execonmcode).
 
 It provides M1200 M-Code which is used to update the interception filters.
 
@@ -9,11 +11,12 @@ Others M-Codes and related commands can be added by editing the `ExecOnMcode.jso
 
 ## Installation
 
-1. Go on the `Plugins` Tab of Duet Web Control
-2. Select `External plugins`
+1. Go on the `Plugins` Tab of Duet Web Control.
+2. Select `External plugins`.
 3. Click on *Upload System Files* and select the plugin zip archive.
 4. Follow the on-screen instructions to install the plugin.
-5. Click on the `Start` button to start the plugin
+5. Click on the `Start` button to start the plugin.
+6. *ExecOnMcode* entry should appears under the *Settings* tab of DWC.
 
 ## Limitations
 
