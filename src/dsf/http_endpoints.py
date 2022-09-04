@@ -50,7 +50,7 @@ def custom_http_endpoints(cmd_conn):
     endpoints = []
 
     # Use DSF API to get the physical path to the configuration file
-    res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}.json")
+    res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}/{PLUGIN_NAME}.json")
     global filter_filepath
     filter_filepath = res.result if res else None
 

@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import traceback
+from pathlib import Path
 
 from dsf.connections import CommandConnection, InterceptConnection
 from dsf.commands.basecommands import LogLevel, MessageType
@@ -112,25 +113,26 @@ def write_message(msg, msgType=MessageType.Success, loglvl=LogLevel.Info):
 def get_actions_from_config():
     actions = []
     # Use DSF API to get the physical path to the configuration file
-    res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}.json")
-    filter_filepath = res.result if res else None
-    if not os.path.isfile(filter_filepath):
-        if filter_filepath:
-            # Create a blank default file as example
-            default_file_data = [
-                {
-                    'cmd_code': 'M1201',
-                    'cmd_name': 'Echo test',
-                    'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
-                    'cmd_user': '',
-                    'cmd_timeout': 30,
-                    'cmd_capture_output': False,
-                    'cmd_flush': False,
-                    'cmd_enabled': True
-                }
-            ]
-            with open(filter_filepath, 'w') as fp:
-                fp.write(json.dumps(default_file_data, indent=4))
+    res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}/{PLUGIN_NAME}.json")
+    filter_filepath = Path(res.result)
+    if not filter_filepath.is_file():
+        # Create missing parent directories
+        filter_filepath.parent.mkdir(parents=True, exist_ok=True)
+        # Create a blank default file as example
+        default_file_data = [
+            {
+                'cmd_code': 'M1201',
+                'cmd_name': 'Echo test',
+                'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
+                'cmd_user': '',
+                'cmd_timeout': 30,
+                'cmd_capture_output': False,
+                'cmd_flush': False,
+                'cmd_enabled': True
+            }
+        ]
+        with open(filter_filepath, 'w') as fp:
+            fp.write(json.dumps(default_file_data, indent=4))
 
     with open(filter_filepath) as fp:
         try:
