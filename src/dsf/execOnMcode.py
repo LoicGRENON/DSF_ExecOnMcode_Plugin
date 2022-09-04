@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
 import subprocess
 import traceback
 from pathlib import Path
 
-from dsf.connections import CommandConnection, InterceptConnection
 from dsf.commands.basecommands import LogLevel, MessageType
 from dsf.commands.code import CodeType
+from dsf.connections import CommandConnection, InterceptConnection
 from dsf.initmessages.clientinitmessages import InterceptionMode
 
 from http_endpoints import custom_http_endpoints
@@ -62,20 +61,20 @@ def __do_action_for_code(intercept_connection, actions, code):
         out = subprocess.run(action.cmd_command,
                                 shell=True,
                                 timeout=action.cmd_timeout,
-                                capture_output=action.cmd_capture_output,
+                                capture_output=True,
                                 text=True)
     except subprocess.TimeoutExpired as e:
         error_msg = f"Timeout expired on `{e.cmd}`."
-        if action.capture_output and e.output:
+        if e.output:
             error_msg += f"\nOutput was: {e.output}"
 
     # Resolve the received code and return result
     if error_msg:
         intercept_connection.resolve_code(MessageType.Error, error_msg)
-    elif action.cmd_capture_output and out:
-        intercept_connection.resolve_code(MessageType.Success, out.stdout)
     else:
-        intercept_connection.resolve_code()
+        # Display the command output if not explicitly requested to be hidden
+        msg = f"[{PLUGIN_NAME}]: {out.stdout}" if out and not action.cmd_capture_output else None
+        intercept_connection.resolve_code(MessageType.Success, msg)
 
 
 def intercept_mcodes(actions):
