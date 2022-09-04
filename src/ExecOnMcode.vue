@@ -131,8 +131,6 @@
                     cmd_enabled: false,
                     cmd_timeout: 30
                 },
-                last_cmd_code: 1201,
-                current_cmd_code: null,
                 cmds_list: [],
                 CmdTableHeaders: [
                     { text: 'M-Code', value: 'cmd_code' },
@@ -169,17 +167,26 @@
                 }else {
                     if(this.is_newCmd){
                         this.cmds_list.push(this.editItem);
-                        this.last_cmd_code = this.current_cmd_code;
                     }
                     this.save_cmds()
                     this.edit_cmd_dialog = false;
                     return;
                 }
             },
+            get_next_available_code(){
+                // Return the next available code, starting from M1201
+                var next_available_code = 1201;
+                this.cmds_list.forEach((item) => {
+                    console.log(item);
+                    if(item.cmd_code != "M".concat(next_available_code))
+                        return next_available_code;
+                    next_available_code++;
+                });
+                return next_available_code;
+            },
             new_cmd(){
-                this.current_cmd_code = this.last_cmd_code + 1;
                 var new_command ={
-                    cmd_code: "M" + this.current_cmd_code,
+                    cmd_code: "M" + this.get_next_available_code(),
                     cmd_name: "",
                     cmd_command: "",
                     cmd_enabled: true,
