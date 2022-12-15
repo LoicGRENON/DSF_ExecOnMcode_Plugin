@@ -6,10 +6,10 @@ import subprocess
 import traceback
 from pathlib import Path
 
-from dsf.commands.basecommands import LogLevel, MessageType
 from dsf.commands.code import CodeType
-from dsf.connections import CommandConnection, InterceptConnection
-from dsf.initmessages.clientinitmessages import InterceptionMode
+from dsf.connections import CommandConnection, InterceptConnection, InterceptionMode
+from dsf.object_model.messages import MessageType
+from dsf.object_model.state.log_level import LogLevel
 
 from http_endpoints import custom_http_endpoints
 from MCodeAction import MCodeAction

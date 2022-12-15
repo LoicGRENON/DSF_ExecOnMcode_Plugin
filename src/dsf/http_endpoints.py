@@ -3,8 +3,7 @@
 import json
 
 from dsf.connections import CommandConnection
-from dsf.commands.basecommands import HttpEndpointType
-from dsf.http import HttpEndpointConnection
+from dsf.http import HttpEndpointConnection, HttpEndpointType
 
 PLUGIN_NAME = "ExecOnMcode"
 filter_filepath = ""
