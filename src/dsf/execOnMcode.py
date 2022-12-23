@@ -58,7 +58,13 @@ def __do_action_for_code(intercept_connection, actions, code):
             return
     # TODO: use user
     try:
-        out = subprocess.run(action.cmd_command,
+        action_command = str(action.cmd_command)
+
+        # if the m-code was passed with an argument, append that argument to the system command
+        if len(str(code).split(" ", 1)) == 2:
+            action_command = action_command + " " + str(code).split(" " , 1)[1].strip('\"')
+
+        out = subprocess.run(action_command,
                                 shell=True,
                                 timeout=action.cmd_timeout,
                                 capture_output=True,
