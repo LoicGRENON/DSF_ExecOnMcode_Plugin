@@ -78,14 +78,6 @@
                                         <v-col class="ma-0 pa-0">
                                             <v-tooltip bottom>
                                                 <template v-slot:activator="{ on, attrs }">
-                                                    <span v-bind="attrs" v-on="on"><v-switch label="Flush code channel" v-model="editItem.cmd_flush"></v-switch></span>
-                                                </template>
-                                                <span>Flush the Gcode channel before issuing the command</span>
-                                            </v-tooltip>
-                                        </v-col>
-                                        <v-col class="ma-0 pa-0">
-                                            <v-tooltip bottom>
-                                                <template v-slot:activator="{ on, attrs }">
                                                     <span v-bind="attrs" v-on="on"><v-switch label="Hide output" v-model="editItem.cmd_capture_output"></v-switch></span>
                                                 </template>
                                                 <span>Hide the command output from the DWC console</span>
@@ -152,7 +144,6 @@
                     cmd_command: "Enter a command to execute on SBC",
                     cmd_enabled: false,
                     cmd_timeout: 30,
-                    cmd_flush: false,
                     cmd_capture_output: false
                 },
                 cmds_list: [],
@@ -216,7 +207,6 @@
                     cmd_command: "",
                     cmd_enabled: true,
                     cmd_timeout: 30,
-                    cmd_flush: false,
                     cmd_capture_output: false
                 }
                 this.edit_cmd(new_command, true);

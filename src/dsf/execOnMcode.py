@@ -48,13 +48,6 @@ def __do_action_for_code(intercept_connection, actions, code):
     if not action or not action.cmd_enabled:
         intercept_connection.ignore_code()
         return
-    if action.cmd_flush:
-        # Flush the code's channel to be sure we are being in sync with the machine
-        success = intercept_connection.flush(code.channel)
-        if not success:
-            print("Flush failed")
-            intercept_connection.cancel_code()
-            return
     try:
         action_command = str(action.cmd_command)
 
@@ -130,7 +123,6 @@ def get_actions_from_config():
                 'cmd_command': f"echo 'If you can see this, it means {PLUGIN_NAME} is working !'",
                 'cmd_timeout': 30,
                 'cmd_capture_output': False,
-                'cmd_flush': False,
                 'cmd_enabled': True
             },
             {
@@ -139,7 +131,6 @@ def get_actions_from_config():
                 'cmd_command': "python3 /opt/dsf/sd/sys/ExecOnMcode/top-example.py",
                 'cmd_timeout': 30,
                 'cmd_capture_output': False,
-                'cmd_flush': False,
                 'cmd_enabled': True
             }
         ]

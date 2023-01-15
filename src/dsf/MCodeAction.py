@@ -20,11 +20,6 @@ class MCodeAction:
             self.cmd_timeout = 30
 
         try:
-            self.cmd_flush = bool(action['cmd_flush'])
-        except KeyError:
-            self.cmd_flush = False
-
-        try:
             self.cmd_capture_output = bool(action['cmd_capture_output'])
         except KeyError:
             self.cmd_capture_output = False
