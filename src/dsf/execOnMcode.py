@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 import json
 import subprocess
@@ -56,19 +55,19 @@ def __do_action_for_code(intercept_connection, actions, code):
             print("Flush failed")
             intercept_connection.cancel_code()
             return
-    # TODO: use user
     try:
         action_command = str(action.cmd_command)
 
         # if the m-code was passed with an argument, append that argument to the system command
-        if len(str(code).split(" ", 1)) == 2:
-            action_command = action_command + " " + str(code).split(" " , 1)[1].strip('\"')
+        parameters = ''.join([str(p) for p in code.parameters])
+        if len(parameters):
+            action_command += ' ' + parameters
 
         out = subprocess.run(action_command,
-                                shell=True,
-                                timeout=action.cmd_timeout,
-                                capture_output=True,
-                                text=True)
+                             shell=True,
+                             timeout=action.cmd_timeout,
+                             capture_output=True,
+                             text=True)
     except subprocess.TimeoutExpired as e:
         error_msg = f"Timeout expired on `{e.cmd}`."
         if e.output:
@@ -168,6 +167,7 @@ def get_actions_from_config():
 
 
 if __name__ == "__main__":
+    endpoints = []
     cmd_conn = CommandConnection()
     try:
         cmd_conn.connect()
@@ -177,4 +177,3 @@ if __name__ == "__main__":
         for endpoint in endpoints:
             endpoint.close()
         cmd_conn.close()
-

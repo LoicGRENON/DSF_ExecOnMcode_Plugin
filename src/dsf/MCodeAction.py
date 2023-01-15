@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 class MCodeAction:
     def __init__(self, action):
         if 'cmd_code' not in action:
