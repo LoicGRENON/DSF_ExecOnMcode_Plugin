@@ -132,7 +132,13 @@
 </template>
 
 <script>
+
+    import { mapGetters, mapActions } from 'vuex'
+
     export default {
+        computed: {
+            ...mapGetters('machine', ['connector'])  // map DWC connector to make HTTP requests
+        },
         data: function () {
             return {
                 alert_required_value: false,
@@ -164,6 +170,7 @@
             this.reload_cmds();  // reload the commands list when the panel is opened
         },
         methods: {
+            ...mapActions('machine', ['request']),  // Map the request method of the DWC connector
             async sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             },
@@ -233,20 +240,12 @@
                 this.save_cmds()
             },
             async reload_cmds(){
-                const headers = { "Access-Control-Allow-Private-Network": "true" };  // Add header for CORS policy
-                const response = await fetch("http://" + window.location.host + "/machine/ExecOnMcode/getCmdList", { headers });
-                const { data: cmds_list } = await response.json();
-                this.cmds_list = cmds_list;
+                const response = await this.connector.request('GET', 'machine/ExecOnMcode/getCmdList', null, 'json');
+                this.cmds_list = response.data;
             },
             async save_cmds(){
-                const requestOptions = {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(this.cmds_list)
-                };
-                const response = await fetch("http://" + window.location.host + "/machine/ExecOnMcode/saveCmdList", requestOptions);
-                const data = await response.json();
-                console.log(data);
+                const payload = new Blob([JSON.stringify(this.cmds_list)]);
+                await this.connector.request('POST', 'machine/ExecOnMcode/saveCmdList', null, 'json', payload);
             },
 		},
     }
