@@ -11,6 +11,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+    - name: Read plugin manifest
+      id: manifest
+      uses: ActionsTools/read-json-action@main
+      with:
+        file_path: "src/plugin.json"
     - name: Cloning DWC repository
       uses: actions/checkout@v4
       with:
@@ -28,5 +33,5 @@ jobs:
     - name: Store the plugin package
       uses: actions/upload-artifact@v4
       with:
-        name: ExecOnMcode
+        name: ${{steps.manifest.outputs.id}}-${{steps.manifest.outputs.version}}
         path: plugin_archive
