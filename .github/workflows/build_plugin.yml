@@ -19,10 +19,10 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@v4
     - run: npm install
-      working-directory: $GITHUB_WORKSPACE/DuetWebControl
+      working-directory: DuetWebControl
     - name: Build plugin
-      run: npm run build-plugin $GITHUB_WORKSPACE/DSF_ExecOnMcode_Plugin\src
-      working-directory: $GITHUB_WORKSPACE/DuetWebControl
+      run: npm run build-plugin $GITHUB_WORKSPACE/DSF_ExecOnMcode_Plugin/src
+      working-directory: DuetWebControl
     - name: Store the plugin package
       uses: actions/upload-artifact@v3
       with:
