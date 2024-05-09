@@ -24,7 +24,8 @@ jobs:
       run: npm run build-plugin $GITHUB_WORKSPACE/src
       working-directory: DuetWebControl
     - name: Store the plugin package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
+        name: ExecOnMcode.zip
         path: DuetWebControl/dist/ExecOnMcode-*.zip
         compression-level: 0 # no compression
