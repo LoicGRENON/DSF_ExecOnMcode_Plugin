@@ -28,5 +28,5 @@ jobs:
     - name: Store the plugin package
       uses: actions/upload-artifact@v4
       with:
-        name: ExecOnMcode.zip
+        name: ExecOnMcode
         path: plugin_archive
