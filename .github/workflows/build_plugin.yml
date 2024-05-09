@@ -1,0 +1,30 @@
+
+name: Manual workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build plugin
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cloning DWC repository
+      uses: actions/checkout@v4
+      with:
+        repository: Duet3D/DuetWebControl
+        ref: refs/heads/release
+        path: DuetWebControl
+    - name: Set working directory
+      run: cd $GITHUB_WORKSPACE/DuetWebControl && pwd && ls
+    - name: Setup node
+      uses: actions/setup-node@v4
+    - run: npm install
+    - name: Build plugin
+      run: npm run build-plugin $GITHUB_WORKSPACE/DSF_ExecOnMcode_Plugin\src
+    - name: Store the plugin package
+      uses: actions/upload-artifact@v3
+      with:
+        path: dist/ExecOnMcode-*.zip
