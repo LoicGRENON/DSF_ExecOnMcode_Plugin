@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Read plugin manifest
       id: manifest
-      uses: ActionsTools/read-json-action@main
+      uses: zoexx/github-action-json-file-properties@release
       with:
         file_path: "src/plugin.json"
     - name: Cloning DWC repository
