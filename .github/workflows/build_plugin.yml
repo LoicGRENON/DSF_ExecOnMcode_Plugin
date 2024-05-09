@@ -26,4 +26,5 @@ jobs:
     - name: Store the plugin package
       uses: actions/upload-artifact@v3
       with:
-        path: $GITHUB_WORKSPACE/DuetWebControl/dist/ExecOnMcode-*.zip
+        path: DuetWebControl/dist/ExecOnMcode-*.zip
+        compression-level: 0 # no compression
