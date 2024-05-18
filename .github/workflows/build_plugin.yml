@@ -1,0 +1,37 @@
+
+name: Build plugin
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build plugin
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Read plugin manifest
+      id: manifest
+      uses: zoexx/github-action-json-file-properties@release
+      with:
+        file_path: "src/plugin.json"
+    - name: Cloning DWC repository
+      uses: actions/checkout@v4
+      with:
+        repository: Duet3D/DuetWebControl
+        path: DuetWebControl
+    - name: Setup node
+      uses: actions/setup-node@v4
+    - run: npm install
+      working-directory: DuetWebControl
+    - name: Build plugin
+      run: npm run build-plugin $GITHUB_WORKSPACE/src
+      working-directory: DuetWebControl
+    - name: Unzip plugin archive
+      run: unzip DuetWebControl/dist/ExecOnMcode-*.zip -d plugin_archive
+    - name: Store the plugin package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{steps.manifest.outputs.id}}-${{steps.manifest.outputs.version}}
+        path: plugin_archive
