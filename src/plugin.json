@@ -21,5 +21,5 @@
     "webcamAccess",
     "gpioAccess"
     ],
-  "sbcPythonDependencies": ["dsf-python>=3.4.5"]
+  "sbcPackageDependencies": ["python3-dsf-python>=3.5.0"]
 }
