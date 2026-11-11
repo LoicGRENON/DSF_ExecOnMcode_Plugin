@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+src/dist/
+src/pkg/
+src/*.zip

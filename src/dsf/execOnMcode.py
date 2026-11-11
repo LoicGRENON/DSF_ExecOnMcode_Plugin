@@ -1,17 +1,15 @@
 #!/usr/bin/python3
 
 import json
+import dsf
 import subprocess
 import traceback
 from pathlib import Path
 
-from dsf.commands.code import CodeType
 from dsf.connections import CommandConnection, InterceptConnection, InterceptionMode
-from dsf.object_model.messages import MessageType
-from dsf.object_model.state.log_level import LogLevel
 
-from http_endpoints import custom_http_endpoints
 from MCodeAction import MCodeAction
+from compat import SUCCESS, ERROR, INFO, WARN, MCODE, resolved_path, major_number
 
 
 DEFAULT_FILTERS = ["M1200"]
@@ -34,7 +32,7 @@ def __update_interception_filters(intercept_connection):
     actions = get_actions_from_config()
     filters = __get_filters_from_actions(actions)
     msg = f"{PLUGIN_NAME}: Interception filters successfully updated"
-    intercept_connection.resolve_code(MessageType.Success, msg)
+    intercept_connection.resolve_code(SUCCESS, msg)
     intercept_connection.close()
     intercept_connection = InterceptConnection(InterceptionMode.PRE, filters=filters)
     intercept_connection.connect()
@@ -68,11 +66,11 @@ def __do_action_for_code(intercept_connection, actions, code):
 
     # Resolve the received code and return result
     if error_msg:
-        intercept_connection.resolve_code(MessageType.Error, error_msg)
+        intercept_connection.resolve_code(ERROR, error_msg)
     else:
         # Display the command output if not explicitly requested to be hidden
         msg = f"[{PLUGIN_NAME}]: {out.stdout}" if out and out.stdout and not action.cmd_capture_output else None
-        intercept_connection.resolve_code(MessageType.Success, msg)
+        intercept_connection.resolve_code(SUCCESS, msg)
 
 
 def intercept_mcodes(actions):
@@ -86,11 +84,11 @@ def intercept_mcodes(actions):
             code = intercept_connection.receive_code()
 
             # Check for the type of the code
-            if code.type != CodeType.MCode:
+            if code.type != MCODE:
                 intercept_connection.ignore_code()
                 continue
 
-            if code.majorNumber == 1200:  # Update interception filters
+            if major_number(code) == 1200:  # Update interception filters
                 intercept_connection, filters, actions = __update_interception_filters(intercept_connection)
             elif code.short_str() in filters:  # Do action from JSON file
                 __do_action_for_code(intercept_connection, actions, code)
@@ -103,7 +101,7 @@ def intercept_mcodes(actions):
         intercept_connection.close()
 
 
-def write_message(msg, msgType=MessageType.Success, loglvl=LogLevel.Info):
+def write_message(msg, msgType=SUCCESS, loglvl=INFO):
     cmd_conn.write_message(msgType, f"{PLUGIN_NAME}: {msg}", True, loglvl)
 
 
@@ -111,7 +109,7 @@ def get_actions_from_config():
     actions = []
     # Use DSF API to get the physical path to the configuration file
     res = cmd_conn.resolve_path(f"0:/sys/{PLUGIN_NAME}/{PLUGIN_NAME}.json")
-    filter_filepath = Path(res.result)
+    filter_filepath = Path(resolved_path(res))
     if not filter_filepath.is_file():
         # Create missing parent directories
         filter_filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -142,29 +140,26 @@ def get_actions_from_config():
             json_filter = json.load(fp)
         except json.decoder.JSONDecodeError as e:
             json_filter = []
-            write_message(e, MessageType.Error, LogLevel.Warn)
+            write_message(e, ERROR, WARN)
         for action in json_filter:
             if action['cmd_code'] in DEFAULT_FILTERS:
                 write_message(
                     f"{action['cmd_code']} is a reserved filter and thus it can't be used.",
-                    MessageType.Error,
-                    LogLevel.Warn)
+                    ERROR,
+                    WARN)
                 continue
             try:
                 actions.append(MCodeAction(action))
             except KeyError as e:
-                write_message(e, MessageType.Error, LogLevel.Warn)
+                write_message(e, ERROR, WARN)
     return actions
 
 
 if __name__ == "__main__":
-    endpoints = []
     cmd_conn = CommandConnection()
     try:
         cmd_conn.connect()
-        endpoints = custom_http_endpoints(cmd_conn)
+        print(f"ExecOnMcode: dsf-python {getattr(dsf, '__version__', 'unknown')}, protocol {dsf.PROTOCOL_VERSION}", flush=True)
         intercept_mcodes(get_actions_from_config())
     finally:
-        for endpoint in endpoints:
-            endpoint.close()
         cmd_conn.close()

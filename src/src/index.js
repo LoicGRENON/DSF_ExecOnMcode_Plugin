@@ -1,14 +1,9 @@
-'use strict'
+import { registerRoute } from "@/plugins";
+import ExecOnMcode from "./ExecOnMcode.vue";
 
-import { registerRoute } from '@/routes'
-import ExecOnMcode from './ExecOnMcode.vue'
-// Register a route via Settings -> ExecOnMcode
 registerRoute(ExecOnMcode, {
-	Settings: {
-		ExecOnMcode: {
-			icon: 'mdi-powershell',
-			caption: 'ExecOnMcode',
-			path: '/ExecOnMcode'
-		}
-	}
+    Preferences: { ExecOnMcode: {
+        icon: "mdi-powershell", caption: "ExecOnMcode", translated: true,
+        path: "/ExecOnMcode"
+    } }
 });

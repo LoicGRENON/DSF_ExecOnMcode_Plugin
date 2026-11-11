@@ -1,5 +1,9 @@
 # DSF_ExecOnMcode_Plugin
 
+This branch supports **DuetWebControl / DuetSoftwareFramework 3.7**.
+See [MIGRATION-3.7.md](MIGRATION-3.7.md) for API changes, build/test instructions
+and the scope of hardware validation.
+
 ![ExecOnMcode](https://user-images.githubusercontent.com/974748/212554271-af1bf32e-a8fa-4a3b-988b-4c76a5a31052.png)
 
 ## Description
@@ -15,12 +19,12 @@ Command arguments can be passed from G-Code parameters, e.g: when issuing `Mxxx 
 
 ## Installation
 
-1. Go on the `Plugins` Tab of Duet Web Control.
-2. Select `External plugins`.
-3. Click on *Upload System Files* and select the plugin zip archive.
-4. Follow the on-screen instructions to install the plugin.
-5. Click on the `Start` button to start the plugin.
-6. *ExecOnMcode* entry should appears under the *Settings* tab of DWC.
+1. Open the **Plugins** page in Duet Web Control 3.7.
+2. Select **Install plugin**, choose the plugin ZIP and follow the installation steps.
+3. Start the plugin. Open **ExecOnMcode** under **Preferences** to edit commands.
+
+Configuration is stored at `0:/sys/ExecOnMcode/ExecOnMcode.json`. Opening the
+panel only reads it; saving uploads the file and sends `M1200` to reload filters.
 
 ## Limitations
 

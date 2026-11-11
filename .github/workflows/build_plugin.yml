@@ -1,54 +1,57 @@
 name: Plugin build
 
 on:
-  workflow_dispatch:  # Manual trigger from GitHub UI
+  pull_request:
+  workflow_dispatch:
     inputs:
       duetwebcontrol_ref:
-        description: 'Enter the tag, branch or SHA of the Duet3D/DuetWebControl repository to use.'
+        description: DuetWebControl tag, branch or SHA (3.7 or newer)
         required: true
+        default: v3.7.0
+
+permissions:
+  contents: read
 
 jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dsf_python_ref:
+          - 23308a2bdb90d34f6904541f42b008755bbae072 # 3.6
+          - 9fbeb14607a0ef82bfc1180239858fa3b08c03ce # 3.7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install "git+https://github.com/Duet3D/dsf-python.git@${{ matrix.dsf_python_ref }}"
+      - run: python -m unittest discover -s tests -v
+
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout current repository
-      uses: actions/checkout@v4
-      with:
+      - uses: actions/checkout@v4
+        with:
           path: plugin
-
-    - name: Checkout DuetWebControl repository
-      uses: actions/checkout@v4
-      with:
-        repository: Duet3D/DuetWebControl
-        ref: ${{ github.event.inputs.duetwebcontrol_ref }}
-        path: DuetWebControl
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: latest
-
-    - name: Install dependencies in DuetWebControl
-      working-directory: DuetWebControl
-      run: npm install
-
-    - name: Build plugin
-      working-directory: DuetWebControl
-      run: npm run build-plugin ../plugin/src
-
-    - name: Rename plugin zip file
-      id: rename-zip
-      working-directory: DuetWebControl
-      run: |
-          zipfile=$(ls dist/ExecOnMcode-*.zip)
-          base=$(basename "$zipfile" .zip)
-          newname="${base}-${{ github.event.inputs.duetwebcontrol_ref }}.zip"
-          mv "$zipfile" "$newname"
-          echo "zipname=$(basename $newname .zip)" >> "$GITHUB_OUTPUT"
-
-    - name: Upload plugin archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: ExecOnMcode_toUnzip
-        path: DuetWebControl/${{ steps.rename-zip.outputs.zipname }}.zip
+      - uses: actions/checkout@v4
+        with:
+          repository: Duet3D/DuetWebControl
+          ref: ${{ inputs.duetwebcontrol_ref || 'v3.7.0' }}
+          path: DuetWebControl
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test frontend command handling
+        working-directory: plugin
+        run: npm test
+      - name: Install DWC build dependencies
+        working-directory: DuetWebControl
+        run: npm ci --no-audit --no-fund
+      - name: Build and package plugin
+        working-directory: DuetWebControl
+        run: node scripts/build-plugin-pkg.js ../plugin/src
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ExecOnMcode-3.7
+          path: plugin/src/ExecOnMcode-*.zip
